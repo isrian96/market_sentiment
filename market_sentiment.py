@@ -9,12 +9,13 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-analyzer = SentimentIntensityAnalyzer()
-
 st.set_page_config(layout="wide")
 
 st.title("📈 AI NIFTY 200 Trader")
-st.write("News sentiment + RSI + Volume based signals")
+st.write("News sentiment + RSI + volume based signals")
+
+analyzer = SentimentIntensityAnalyzer()
+
 
 # =========================
 # Load NIFTY 200
@@ -33,6 +34,7 @@ def news_sentiment(symbol):
 
     try:
         name = symbol.replace(".NS","")
+
         url = f"https://news.google.com/rss/search?q={name}%20NSE%20India"
         feed = feedparser.parse(url)
 
@@ -52,7 +54,7 @@ def news_sentiment(symbol):
 
 
 # =========================
-# Technicals
+# Technical indicators
 # =========================
 def technicals(symbol):
 
@@ -81,7 +83,7 @@ def technicals(symbol):
 
 
 # =========================
-# Decision
+# Decision engine
 # =========================
 def decision(symbol):
 
@@ -97,15 +99,15 @@ def decision(symbol):
     vol_avg = tech["vol_avg"]
     ma20 = tech["ma20"]
 
-    # intraday
+    # Intraday BUY
     if sent > 0.25 and rsi < 70 and vol > 1.5*vol_avg and price > ma20:
         return "INTRADAY BUY", sent, rsi
 
-    # long term
+    # Long term BUY
     if sent > 0.15 and price > ma20 and rsi < 60:
         return "LONG TERM BUY", sent, rsi
 
-    # sell
+    # SELL
     if sent < -0.25:
         return "SELL", sent, rsi
 
@@ -145,18 +147,28 @@ if st.button("Scan NIFTY 200"):
 
     st.success("Scan complete")
 
-    st.dataframe(df, use_container_width=True)
+    # show all
+    if len(df) == 0:
+        st.warning("No trading signals found right now")
+    else:
+        st.dataframe(df, use_container_width=True)
 
-    st.subheader("Top Intraday")
+        # intraday
+        st.subheader("🔥 Intraday Buys")
 
-    st.dataframe(
-        df[df["Signal"]=="INTRADAY BUY"],
-        use_container_width=True
-    )
+        intraday = df[df["Signal"]=="INTRADAY BUY"]
 
-    st.subheader("Long Term")
+        if len(intraday) == 0:
+            st.write("No intraday signals")
+        else:
+            st.dataframe(intraday, use_container_width=True)
 
-    st.dataframe(
-        df[df["Signal"]=="LONG TERM BUY"],
-        use_container_width=True
-    )
+        # long term
+        st.subheader("📈 Long Term Buys")
+
+        longterm = df[df["Signal"]=="LONG TERM BUY"]
+
+        if len(longterm) == 0:
+            st.write("No long term signals")
+        else:
+            st.dataframe(longterm, use_container_width=True)
