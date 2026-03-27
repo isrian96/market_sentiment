@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 st.set_page_config(layout="wide")
 
 st.title("📈 AI NIFTY 200 Trader")
-st.write("Relaxed signals + confidence score")
+st.write("Market sentiment trader")
 
 analyzer = SentimentIntensityAnalyzer()
 
